@@ -1,15 +1,29 @@
-const { shareAll, withModuleFederationPlugin } = require('@angular-architects/module-federation/webpack');
+const ModuleFederationPlugin = require("webpack/lib/container/ModuleFederationPlugin");
+const { share } = require("@angular-architects/module-federation/webpack");
 
-module.exports = withModuleFederationPlugin({
-
-  name: 'profile-app',
-
-  exposes: {
-    './Component': './src/app/app.component.ts',
+module.exports = {
+  output: {
+    uniqueName: "profileApp",
+    publicPath: "auto",
+    clean: true,
   },
-
-  shared: {
-    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+  optimization: {
+    runtimeChunk: false,
   },
-
-});
+  resolve: {
+    extensions: [".ts", ".js", ".json"],
+  },
+  plugins: [
+    new ModuleFederationPlugin({
+      name: "profileApp",
+      filename: "remoteEntry.js",
+      exposes: { './Module': './src/app/profile/profile.module.ts' },
+      shared: share({
+        "@angular/core": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+        "@angular/common": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+        "@angular/router": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+        "rxjs": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+      }),
+    }),
+  ],
+};
